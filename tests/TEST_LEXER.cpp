@@ -5,6 +5,7 @@
 TEST_CASE("Basic lexer testing", "[lexer]"){
     Lexer l("2+2");
     auto t = l.peek();
+    INFO(t.data);
     REQUIRE(t.data == "2");
 
 

@@ -30,7 +30,9 @@ struct Token{
 
 };
 struct Token_dumpster{
-    std::vector<Token> dumped;
+    Token cur_tok;
+    Lexem get_token_lexem();
+    std::string get_token_data();
 };
 
 class Lexer{
@@ -40,13 +42,12 @@ class Lexer{
     char char_peek();
     char char_next();
     Char_type get_char_type(char c);
+    Token misc_to_token(char c);
     Token scan_number();
     Token scan_identificator();
-    Token misc_to_token(char c);
  public:
-    Lexer(std::string);
+    explicit Lexer(std::string);
     Token peek();
     Token next();
-    void dump(Token_dumpster d);
 };
 
