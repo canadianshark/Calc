@@ -24,15 +24,10 @@ enum class Char_type{
 };
 
 struct Token{
-    const Lexem type;
+    const Lexem lexem;
     const std::string data;
     Token(Lexem, std::string);
 
-};
-struct Token_dumpster{
-    Token cur_tok;
-    Lexem get_token_lexem();
-    std::string get_token_data();
 };
 
 class Lexer{
@@ -42,12 +37,13 @@ class Lexer{
     char char_peek();
     char char_next();
     Char_type get_char_type(char c);
-    Token misc_to_token(char c);
+    Token misc_to_token();
     Token scan_number();
     Token scan_identificator();
  public:
     explicit Lexer(std::string);
     Token peek();
     Token next();
+    void dump_tokens();
 };
 
