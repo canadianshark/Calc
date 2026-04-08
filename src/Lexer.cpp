@@ -189,8 +189,8 @@ Token Lexer::peek() {
 }
 
 Token Lexer::next() {
-    if(position > expression.length()){
-        throw std::runtime_error("ERROR: Lexer jumped out of bounds of the expression");
+    if(position >= expression.length()){
+        return Token(Lexem::END, "");
     }
     char first_char = char_peek();
 

@@ -12,11 +12,12 @@ enum class Lexem{
     MINUS,
     MULTIPLICATION,
     DIVISION,
-    POWER
+    POWER,
+    END
 };
 
 enum class Scan_state{
-    DEFAULT, NUMBER, LEAD_ZERO, POINT, FRACTIONAl,ID, EXIT
+    DEFAULT, NUMBER, LEAD_ZERO, POINT, FRACTIONAl,
 };
 
 enum class Char_type{

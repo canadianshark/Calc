@@ -8,6 +8,8 @@ void log(const std::string& msg) {
     std::cerr << msg << std::flush;
 }
 
+
+
 TEST_CASE("Lexer handles numbers correctly", "[lexer][numbers]") {
     log("\n=== Testing number handling ===\n");
 
@@ -299,7 +301,9 @@ TEST_CASE("Edge cases", "[lexer][edge]") {
     SECTION("Empty expression throws") {
         log("  Testing empty expression...\n");
         Lexer lexer("");
-        REQUIRE_THROWS_AS(lexer.next(), std::runtime_error);
+        Token t1 = lexer.next();
+        CHECK(t1.lexem == Lexem::END);
+        CHECK(t1.data == "");
         log("  OK\n");
     }
 
