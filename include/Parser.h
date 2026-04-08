@@ -12,7 +12,7 @@ private:
     std::unique_ptr<AST_node> parse_right_side(std::unique_ptr<AST_node> left_side);
     std::unique_ptr<AST_node> parse_expression();
 public:
-    Parser(Lexer l, Parser_context ctx);
+    Parser(Lexer l, Parser_context& ctx);
     AST parse_all();
 
 };

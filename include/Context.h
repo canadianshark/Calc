@@ -3,6 +3,7 @@
 #include "unordered_set"
 #include "stdexcept"
 #include <string>
+#include <functional>
 
 struct Parser_context{
     std::unordered_map<std::string , int> operation_table;
@@ -12,4 +13,12 @@ struct Parser_context{
     Parser_context();
     int get_priority(std::string op) const;
     bool left_asociative(std::string op) const;
+};
+
+struct Calculating_context{
+    std::unordered_map<std::string, double> variables;
+    std::unordered_map<std::string, std::function<double(double)>> functions;
+    std::unordered_map<std::string, std::function<double(double, double )>> operation_rules;
+    Calculating_context();
+
 };

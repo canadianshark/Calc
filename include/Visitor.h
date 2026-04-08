@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include "Context.h"
 
 class Visitor{
 public:
@@ -20,4 +21,27 @@ public:
    void visit(class Binop_node& node) override;
    void visit(class Unop_node& node) override;
    void visit(class Func_node& node) override;
+};
+
+class Printing_visitor: public Visitor{
+public:
+    std::string result;
+    void visit(class Number_node& node) override;
+    void visit(class Variable_node& node) override;
+    void visit(class Binop_node& node) override;
+    void visit(class Unop_node& node) override;
+    void visit(class Func_node& node) override;
+};
+
+class Calculating_visitor: public Visitor{
+public:
+    Calculating_context context;
+    std::vector<double> stack;
+    Calculating_visitor(Calculating_context& ctx);
+    double get_result();
+    void visit(class Number_node& node) override;
+    void visit(class Variable_node& node) override;
+    void visit(class Binop_node& node) override;
+    void visit(class Unop_node& node) override;
+    void visit(class Func_node& node) override;
 };

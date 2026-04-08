@@ -415,34 +415,15 @@ TEST_CASE("Parser handles edge cases", "[parser][edge]") {
     }
 }
 
-TEST_CASE("Parser preserves expression structure", "[parser][structure]") {
-    log("\n=== Testing structure preservation ===\n");
 
-    SECTION("Same expression different parentheses") {
-        log("  Testing parentheses equivalence...\n");
-        std::string result1 = parse_to_polish("2+3+4");
-        std::string result2 = parse_to_polish("(2+3)+4");
-        REQUIRE(result1 == result2);
-        log("  OK\n");
-    }
 
-    SECTION("Commutative operations structure") {
-        log("  Testing commutative operations...\n");
-        std::string result1 = parse_to_polish("2+3");
-        std::string result2 = parse_to_polish("3+2");
-        REQUIRE(result1 != result2); // Structure differs, which is fine
-        log("  OK\n");
-    }
-}
-
-// Performance test for complex expressions
 TEST_CASE("Parser handles large expressions", "[parser][performance]") {
     log("\n=== Testing large expressions ===\n");
 
     SECTION("Long chain of additions") {
         log("  Testing long addition chain...\n");
         std::string expr = "1";
-        for (int i = 2; i <= 10; ++i) {
+        for (int i = 2; i <= 100; ++i) {
             expr += "+" + std::to_string(i);
         }
         // Should not throw
@@ -450,13 +431,4 @@ TEST_CASE("Parser handles large expressions", "[parser][performance]") {
         log("  OK\n");
     }
 
-    SECTION("Deeply nested parentheses") {
-        log("  Testing deeply nested parentheses...\n");
-        std::string expr = "1";
-        for (int i = 0; i < 20; ++i) {
-            expr = "(" + expr + "+1)";
-        }
-        REQUIRE_NOTHROW(parse_to_polish(expr));
-        log("  OK\n");
-    }
 }

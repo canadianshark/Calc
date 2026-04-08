@@ -1,6 +1,6 @@
 #include "Parser.h"
 
-Parser::Parser(Lexer l, Parser_context ctx): token_stream(l), context(ctx){};
+Parser::Parser(Lexer l, Parser_context& ctx): token_stream(l), context(ctx){};
 
 std::unique_ptr<AST_node> Parser::parse_atom() {
     Token cur_token = token_stream.peek();
@@ -85,24 +85,24 @@ std::unique_ptr<AST_node> Parser::parse_right_side(std::unique_ptr<AST_node> lef
 
     std::unique_ptr<AST_node> atom = parse_atom();
     if(token_stream.peek().lexem == Lexem::END || token_stream.peek().data == ")"){
-       binop->second_op = std::move(atom);
-       return std::move(binop);
+        binop->second_op = std::move(atom);
+        return std::move(binop);
     }
     else{
-       Token new_op = token_stream.peek();
-       int priority_2 = context.get_priority(new_op.data);
-       if(priority_1 > priority_2){
-           binop->second_op = std::move(atom);
-           return parse_right_side(std::move(binop));
-       }
-       if(priority_1 < priority_2){
-           binop->second_op = parse_right_side(std::move(atom));
-           return std::move(binop);
-       }
-       if(priority_1 == priority_2 && !context.left_asociative(binop->get_operation())){
-           binop->second_op = parse_right_side(std::move(atom));
-           return std::move(binop);
-       }
+        Token new_op = token_stream.peek();
+        int priority_2 = context.get_priority(new_op.data);
+        if(priority_1 > priority_2){
+            binop->second_op = std::move(atom);
+            return parse_right_side(std::move(binop));
+        }
+        if(priority_1 < priority_2){
+            binop->second_op = parse_right_side(std::move(atom));
+            return std::move(binop);
+        }
+        if(priority_1 == priority_2 && !context.left_asociative(binop->get_operation())){
+            binop->second_op = parse_right_side(std::move(atom));
+            return std::move(binop);
+        }
         if(priority_1 == priority_2 && context.left_asociative(binop->get_operation())){
             binop->second_op = std::move(atom);
             return parse_right_side(std::move(binop));
