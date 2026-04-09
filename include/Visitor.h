@@ -1,10 +1,14 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include "Context.h"
-#include "AST.h"
+#include <vector>
 
+
+class Calculating_context;
+class Derivative_context;
 class AST_node;
+
+
 
 class Visitor{
 public:
@@ -38,7 +42,7 @@ public:
 
 class Calculating_visitor: public Visitor{
 public:
-    Calculating_context context;
+    Calculating_context& context;
     std::vector<double> stack;
     Calculating_visitor(Calculating_context& ctx);
     double get_result();
@@ -51,8 +55,10 @@ public:
 
 class Derivative_visitor: public Visitor{
 public:
+    Derivative_visitor(Derivative_context& ctx);
     std::unique_ptr<AST_node> result;
-    std::string var;
+    Derivative_context& context;
+    ~Derivative_visitor();
     void visit(class Number_node& node) override;
     void visit(class Variable_node& node) override;
     void visit(class Binop_node& node) override;

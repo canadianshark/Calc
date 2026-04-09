@@ -312,7 +312,7 @@ TEST_CASE("Parser handles expression with all features", "[parser][integration]"
         context.variables.insert("x");
         context.variables.insert("y");
         std::string result = parse_to_polish("sin(x+1)*2+sqrt(4)-y", context);
-        REQUIRE(result == "-(+(*(sin(+(x,1)),2),sqrt(4)),y))");
+        REQUIRE(result == "-(+(*(sin(+(x,1)),2),sqrt(4)),y)");
         log("  OK\n");
     }
 

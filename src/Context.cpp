@@ -1,5 +1,7 @@
 #include "Context.h"
 #include <math.h>
+#include <memory>
+#include "AST.h"
 
 Parser_context::Parser_context() {
     functions = {
@@ -54,4 +56,98 @@ Calculating_context::Calculating_context(){
     operation_rules["*"] = [](double x, double y) {return x*y;};
     operation_rules["/"] = [](double x, double y) {return x/y;};
     operation_rules["^"] = [](double x, double y) {return pow(x,y);};
+
+};
+
+std::unique_ptr<AST_node> Derivative_context::get_deriv(std::string name, std::unique_ptr<AST_node> arg) {
+    if(name == "sin"){
+        auto res = std::make_unique<Func_node>("cos");
+        res->arg = std::move(arg);
+        return res;
+    }
+    if(name == "cos"){
+        auto res = std::make_unique<Unop_node>("-");
+        auto operand = std::make_unique<Func_node>("sin");
+        operand->arg = std::move(arg);
+        res->op = std::move(operand);
+        return res;
+    }
+    if (name == "tan") {
+        // 1 / cos(arg)^2
+        auto power = std::make_unique<Binop_node>("^");
+        auto cos_node = std::make_unique<Func_node>("cos");
+        cos_node->arg = std::move(arg);
+        power->first_op = std::move(cos_node);
+        power->second_op = std::make_unique<Number_node>("2");
+
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::make_unique<Number_node>("1");
+        res->second_op = std::move(power);
+        return res;
+    }
+
+    if (name == "asin") {
+        // 1 / sqrt(1 - arg^2)
+        auto minus = std::make_unique<Binop_node>("-");
+        minus->first_op = std::make_unique<Number_node>("1");
+        auto pwr = std::make_unique<Binop_node>("^");
+        pwr->first_op = std::move(arg);
+        pwr->second_op = std::make_unique<Number_node>("2");
+        minus->second_op = std::move(pwr);
+
+        auto sq = std::make_unique<Func_node>("sqrt");
+        sq->arg = std::move(minus);
+
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::make_unique<Number_node>("1");
+        res->second_op = std::move(sq);
+        return res;
+    }
+
+    if (name == "acos") {
+        auto res = std::make_unique<Unop_node>("-");
+        res->op = get_deriv("asin", std::move(arg));
+        return res;
+    }
+
+    if (name == "atan") {
+        auto plus = std::make_unique<Binop_node>("+");
+        plus->first_op = std::make_unique<Number_node>("1");
+        auto pwr = std::make_unique<Binop_node>("^");
+        pwr->first_op = std::move(arg);
+        pwr->second_op = std::make_unique<Number_node>("2");
+        plus->second_op = std::move(pwr);
+
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::make_unique<Number_node>("1");
+        res->second_op = std::move(plus);
+        return res;
+    }
+
+    if (name == "exp") {
+        auto res = std::make_unique<Func_node>("exp");
+        res->arg = std::move(arg);
+        return res;
+    }
+
+    if (name == "log") {
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::make_unique<Number_node>("1");
+        res->second_op = std::move(arg);
+        return res;
+    }
+
+    if (name == "sqrt") {
+        auto mult = std::make_unique<Binop_node>("*");
+        mult->first_op = std::make_unique<Number_node>("2");
+        auto sq = std::make_unique<Func_node>("sqrt");
+        sq->arg = std::move(arg);
+        mult->second_op = std::move(sq);
+
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::make_unique<Number_node>("1");
+        res->second_op = std::move(mult);
+        return res;
+    }
+
 }

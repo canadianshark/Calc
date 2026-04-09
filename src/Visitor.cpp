@@ -1,5 +1,6 @@
 #include "Visitor.h"
 #include "AST.h"
+#include "Context.h"
 
 void Polish_visitor::visit(class Number_node &node){
     result += node.dump_data();
@@ -108,7 +109,7 @@ double Calculating_visitor::get_result() {
 void Derivative_visitor::visit(Number_node& n) { result = std::make_unique<Number_node>("0"); }
 
 void Derivative_visitor::visit(Variable_node& n) {
-    result = std::make_unique<Number_node>(n.get_name() == var ? "1" : "0");
+    result = std::make_unique<Number_node>(n.get_name() == context.var ? "1" : "0");
 }
 void Derivative_visitor::visit(Binop_node& n) {
     if (n.get_operation() == "+" || n.get_operation() == "-") {
@@ -120,7 +121,6 @@ void Derivative_visitor::visit(Binop_node& n) {
         result = std::move(node);
     }
     if (n.get_operation() == "*") {
-        // (u*v)' = u'v + uv'
         auto plus = std::make_unique<Binop_node>("+");
         auto left = std::make_unique<Binop_node>("*");
         auto right = std::make_unique<Binop_node>("*");
@@ -137,10 +137,58 @@ void Derivative_visitor::visit(Binop_node& n) {
         plus->second_op = std::move(right);
         result = std::move(plus);
     }
+    if(n.get_operation() == "^"){
+        n.first_op->accept(*this);
+        auto du = std::move(result);
+        n.second_op->accept(*this);
+        auto dv = std::move(result);
+
+        auto v_mult_du = std::make_unique<Binop_node>("*");
+        v_mult_du->first_op = n.second_op->clone();
+        v_mult_du->second_op = std::move(du);
+
+        auto fraction = std::make_unique<Binop_node>("/");
+        fraction->first_op = std::move(v_mult_du);
+        fraction->second_op = n.first_op->clone();
+
+        // 3. Строим левую часть скобки: v' * ln(u)
+        auto ln_u = std::make_unique<Func_node>("log");
+        ln_u->arg = n.first_op->clone();
+
+        auto dv_mult_lnu = std::make_unique<Binop_node>("*");
+        dv_mult_lnu->first_op = std::move(dv);
+        dv_mult_lnu->second_op = std::move(ln_u);
+
+        // 4. Складываем части в скобку: (v' * ln(u) + (v * u') / u)
+        auto bracket = std::make_unique<Binop_node>("+");
+        bracket->first_op = std::move(dv_mult_lnu);
+        bracket->second_op = std::move(fraction);
+
+        // 5. Итоговый результат: u^v * (скобка)
+        auto final_res = std::make_unique<Binop_node>("*");
+        final_res->first_op = n.clone(); // u^v в исходном виде
+        final_res->second_op = std::move(bracket);
+
+        result = std::move(final_res);
+    }
 }
 
-void Derivative_visitor::visit(class Func_node &node) {
+void Derivative_visitor::visit(class Func_node &n) {
+   n.arg->accept(*this);
+   auto arg_d = std::move(result);
 
+   auto mult = std::make_unique<Binop_node>("*");
+   mult->first_op = std::move(context.get_deriv(n.get_name(), std::move(n.arg)));
+   mult->second_op = std::move(arg_d);
 }
 
-void Derivative_visitor::visit(class Unop_node &node) {}
+void Derivative_visitor::visit(class Unop_node &n) {
+    auto unop = std::make_unique<Unop_node>(n.get_operation());
+    n.op->accept(*this);
+    unop->op = std::move(result);
+    result = std::move(unop);
+}
+
+Derivative_visitor::~Derivative_visitor() = default;
+
+Derivative_visitor::Derivative_visitor(Derivative_context& ctx): context(ctx){};

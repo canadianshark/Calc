@@ -4,6 +4,9 @@
 #include "stdexcept"
 #include <string>
 #include <functional>
+#include <memory>
+
+class AST_node;
 
 struct Parser_context{
     std::unordered_map<std::string , int> operation_table;
@@ -24,5 +27,7 @@ struct Calculating_context{
 };
 
 struct Derivative_context{
+    std::unique_ptr<AST_node> get_deriv(std::string name,std::unique_ptr<AST_node> arg_d);
+    std::string var;
 
 };
