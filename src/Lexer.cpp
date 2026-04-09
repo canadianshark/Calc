@@ -192,12 +192,14 @@ Token Lexer::next() {
     if(position >= expression.length()){
         return Token(Lexem::END, "");
     }
-    char first_char = char_peek();
-
-    while(first_char == ' '){
+    while (position < expression.length() && char_peek() == ' ') {
         char_next();
-        first_char = char_peek();
     }
+    if (position >= expression.length()) {
+        return Token(Lexem::END, "");
+    }
+
+    char first_char = char_peek();
 
     switch (get_char_type(first_char)) {
         case Char_type::NUMBER: case Char_type::ZERO:

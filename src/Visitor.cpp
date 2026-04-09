@@ -105,3 +105,42 @@ double Calculating_visitor::get_result() {
     return stack.back();
 }
 
+void Derivative_visitor::visit(Number_node& n) { result = std::make_unique<Number_node>("0"); }
+
+void Derivative_visitor::visit(Variable_node& n) {
+    result = std::make_unique<Number_node>(n.get_name() == var ? "1" : "0");
+}
+void Derivative_visitor::visit(Binop_node& n) {
+    if (n.get_operation() == "+" || n.get_operation() == "-") {
+        auto node = std::make_unique<Binop_node>(n.get_operation());
+        n.first_op->accept(*this);
+        node->first_op = std::move(result);
+        n.second_op->accept(*this);
+        node->second_op = std::move(result);
+        result = std::move(node);
+    }
+    if (n.get_operation() == "*") {
+        // (u*v)' = u'v + uv'
+        auto plus = std::make_unique<Binop_node>("+");
+        auto left = std::make_unique<Binop_node>("*");
+        auto right = std::make_unique<Binop_node>("*");
+
+        n.first_op->accept(*this);
+        left->first_op = std::move(result);
+        left->second_op = n.second_op->clone();
+
+        n.second_op->accept(*this);
+        right->second_op = std::move(result);
+        right->first_op = n.first_op->clone();
+
+        plus->first_op = std::move(left);
+        plus->second_op = std::move(right);
+        result = std::move(plus);
+    }
+}
+
+void Derivative_visitor::visit(class Func_node &node) {
+
+}
+
+void Derivative_visitor::visit(class Unop_node &node) {}

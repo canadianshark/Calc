@@ -73,43 +73,37 @@ std::unique_ptr<Binop_node> Parser::parse_binop(){
 
 std::unique_ptr<AST_node> Parser::parse_expression() {
     std::unique_ptr<AST_node> atom = parse_atom();
-    std::unique_ptr<AST_node> full_tree = parse_right_side(std::move(atom));
+    std::unique_ptr<AST_node> full_tree = parse_right_side(std::move(atom), 0);
     return full_tree;
 }
 
-std::unique_ptr<AST_node> Parser::parse_right_side(std::unique_ptr<AST_node> left_side) {
-    if(token_stream.peek().lexem == Lexem::END || token_stream.peek().data == ")") return left_side;
+std::unique_ptr<AST_node> Parser::parse_right_side(std::unique_ptr<AST_node> left_side, int min_priority) {
+    Token next_token = token_stream.peek();
+
+    if (next_token.lexem == Lexem::END || next_token.data == ")") return left_side;
+
+    int priority_1 = context.get_priority(next_token.data);
+    if (priority_1 < min_priority) return left_side;
+
     std::unique_ptr<Binop_node> binop = parse_binop();
-    int priority_1 = context.get_priority(binop->get_operation());
     binop->first_op = std::move(left_side);
 
     std::unique_ptr<AST_node> atom = parse_atom();
-    if(token_stream.peek().lexem == Lexem::END || token_stream.peek().data == ")"){
-        binop->second_op = std::move(atom);
-        return std::move(binop);
-    }
-    else{
-        Token new_op = token_stream.peek();
-        int priority_2 = context.get_priority(new_op.data);
-        if(priority_1 > priority_2){
-            binop->second_op = std::move(atom);
-            return parse_right_side(std::move(binop));
-        }
-        if(priority_1 < priority_2){
-            binop->second_op = parse_right_side(std::move(atom));
-            return std::move(binop);
-        }
-        if(priority_1 == priority_2 && !context.left_asociative(binop->get_operation())){
-            binop->second_op = parse_right_side(std::move(atom));
-            return std::move(binop);
-        }
-        if(priority_1 == priority_2 && context.left_asociative(binop->get_operation())){
-            binop->second_op = std::move(atom);
-            return parse_right_side(std::move(binop));
-        }
 
+    Token lookahead = token_stream.peek();
+    if (context.operation_table.contains(lookahead.data)) {
+        int priority_2 = context.get_priority(lookahead.data);
+
+        if (priority_1 < priority_2 || (!context.left_asociative(binop->get_operation()) && priority_1 == priority_2)) {
+            int next_min = context.left_asociative(lookahead.data) ? priority_1 + 1 : priority_1;
+            binop->second_op = parse_right_side(std::move(atom), next_min);
+        } else {
+            binop->second_op = std::move(atom);
+        }
+    } else {
+        binop->second_op = std::move(atom);
     }
-    throw std::runtime_error("I am not supposed to appear here");
+    return parse_right_side(std::move(binop), min_priority);
 }
 
 AST Parser::parse_all() {

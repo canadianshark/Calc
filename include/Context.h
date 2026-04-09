@@ -22,3 +22,7 @@ struct Calculating_context{
     Calculating_context();
 
 };
+
+struct Derivative_context{
+
+};

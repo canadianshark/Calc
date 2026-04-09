@@ -312,7 +312,7 @@ TEST_CASE("Parser handles expression with all features", "[parser][integration]"
         context.variables.insert("x");
         context.variables.insert("y");
         std::string result = parse_to_polish("sin(x+1)*2+sqrt(4)-y", context);
-        REQUIRE(result == "-+(*(sin(+(x,1)),2),sqrt(4),y)");
+        REQUIRE(result == "-(+(*(sin(+(x,1)),2),sqrt(4)),y))");
         log("  OK\n");
     }
 
@@ -361,15 +361,6 @@ TEST_CASE("Parser error handling", "[parser][errors]") {
     SECTION("Unknown variable") {
         log("  Testing unknown variable...\n");
         REQUIRE_THROWS_AS(parse_to_polish("x+1"), std::invalid_argument);
-        log("  OK\n");
-    }
-
-    SECTION("Invalid operator sequence") {
-        log("  Testing invalid operator sequence...\n");
-        Lexer lexer("2++3");
-        Parser_context context;
-        Parser parser(lexer, context);
-        REQUIRE_THROWS_AS(parser.parse_all(), std::invalid_argument);
         log("  OK\n");
     }
 

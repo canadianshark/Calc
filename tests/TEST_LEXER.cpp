@@ -310,7 +310,7 @@ TEST_CASE("Edge cases", "[lexer][edge]") {
     SECTION("Expression with only whitespace") {
         log("  Testing expression with only whitespace...\n");
         Lexer lexer("   ");
-        REQUIRE_THROWS_AS(lexer.next(), std::runtime_error);
+        CHECK(lexer.next().lexem == Lexem::END); // Это нормальное поведение
         log("  OK\n");
     }
 }

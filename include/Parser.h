@@ -9,7 +9,7 @@ private:
     Lexer token_stream;
     std::unique_ptr<AST_node> parse_atom();
     std::unique_ptr<Binop_node> parse_binop();
-    std::unique_ptr<AST_node> parse_right_side(std::unique_ptr<AST_node> left_side);
+    std::unique_ptr<AST_node> parse_right_side(std::unique_ptr<AST_node> left_side, int min_priority);
     std::unique_ptr<AST_node> parse_expression();
 public:
     Parser(Lexer l, Parser_context& ctx);
