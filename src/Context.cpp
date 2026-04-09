@@ -45,17 +45,33 @@ Calculating_context::Calculating_context(){
     functions["sin"] = [](double x) {return sin(x);};
     functions["cos"] = [](double x) {return cos(x);};
     functions["tan"] = [](double x) {return tan(x);};
-    functions["asin"] = [](double x) {return asin(x);};
-    functions["acos"] = [](double x) {return acos(x);};
     functions["atan"] = [](double x) {return atan(x);};
     functions["exp"] = [](double x) {return exp(x);};
-    functions["log"] = [](double x) {return log(x);};
-    functions["sqrt"] = [](double x) {return sqrt(x);};
     operation_rules["+"] = [](double x, double y) {return x+y;};
     operation_rules["-"] = [](double x, double y) {return x-y;};
     operation_rules["*"] = [](double x, double y) {return x*y;};
-    operation_rules["/"] = [](double x, double y) {return x/y;};
     operation_rules["^"] = [](double x, double y) {return pow(x,y);};
+
+    functions["sqrt"] = [](double x) {
+        if (x < 0) throw std::domain_error("Math Error: sqrt of negative number");
+        return sqrt(x);
+    };
+    functions["log"] = [](double x) {
+        if (x <= 0) throw std::domain_error("Math Error: log of non-positive number");
+        return log(x);
+    };
+    functions["asin"] = [](double x) {
+        if (x < -1 || x > 1) throw std::domain_error("Math Error: asin out of [-1, 1]");
+        return asin(x);
+    };
+    functions["acos"] = [](double x) {
+        if (x < -1 || x > 1) throw std::domain_error("Math Error: acos out of [-1, 1]");
+        return acos(x);
+    };
+    operation_rules["/"] = [](double x, double y) {
+        if (y == 0) throw std::domain_error("Math Error: division by zero");
+        return x / y;
+    };
 
 };
 

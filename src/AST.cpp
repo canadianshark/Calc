@@ -95,9 +95,11 @@ std::string Func_node::get_name() {
 }
 
 std::unique_ptr<AST_node> Func_node::clone() {
-    Func_node res = Func_node(name);
-    res.arg = arg->clone();
-    return std::make_unique<Func_node>(std::move(res));
+    auto res = std::make_unique<Func_node>(name);
+    if (arg) {
+        res->arg = arg->clone();
+    }
+    return res;
 }
 
 std::string Func_node::dump_data() {

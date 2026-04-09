@@ -121,22 +121,58 @@ void Derivative_visitor::visit(Binop_node& n) {
         result = std::move(node);
     }
     if (n.get_operation() == "*") {
-        auto plus = std::make_unique<Binop_node>("+");
-        auto left = std::make_unique<Binop_node>("*");
-        auto right = std::make_unique<Binop_node>("*");
-
         n.first_op->accept(*this);
-        left->first_op = std::move(result);
-        left->second_op = n.second_op->clone();
+        auto du = std::move(result);
 
         n.second_op->accept(*this);
-        right->second_op = std::move(result);
-        right->first_op = n.first_op->clone();
+        auto dv = std::move(result);
 
+        auto left = std::make_unique<Binop_node>("*");
+        left->first_op = std::move(du);
+        left->second_op = n.second_op->clone();
+
+        auto right = std::make_unique<Binop_node>("*");
+        right->first_op = n.first_op->clone();
+        right->second_op = std::move(dv);
+
+        auto plus = std::make_unique<Binop_node>("+");
         plus->first_op = std::move(left);
         plus->second_op = std::move(right);
+
         result = std::move(plus);
     }
+
+    if (n.get_operation() == "/") {
+
+        n.first_op->accept(*this);
+        auto du = std::move(result);
+
+        n.second_op->accept(*this);
+        auto dv = std::move(result);
+
+        auto m1 = std::make_unique<Binop_node>("*");
+        m1->first_op = std::move(du);
+        m1->second_op = n.second_op->clone();
+
+        auto m2 = std::make_unique<Binop_node>("*");
+        m2->first_op = n.first_op->clone();
+        m2->second_op = std::move(dv);
+
+        auto minus = std::make_unique<Binop_node>("-");
+        minus->first_op = std::move(m1);
+        minus->second_op = std::move(m2);
+
+        auto v_squared = std::make_unique<Binop_node>("^");
+        v_squared->first_op = n.second_op->clone();
+        v_squared->second_op = std::make_unique<Number_node>("2");
+
+        auto res = std::make_unique<Binop_node>("/");
+        res->first_op = std::move(minus);
+        res->second_op = std::move(v_squared);
+
+        result = std::move(res);
+    }
+
     if(n.get_operation() == "^"){
         n.first_op->accept(*this);
         auto du = std::move(result);
@@ -174,12 +210,14 @@ void Derivative_visitor::visit(Binop_node& n) {
 }
 
 void Derivative_visitor::visit(class Func_node &n) {
-   n.arg->accept(*this);
-   auto arg_d = std::move(result);
+    n.arg->accept(*this);
+    auto arg_d = std::move(result);
 
-   auto mult = std::make_unique<Binop_node>("*");
-   mult->first_op = std::move(context.get_deriv(n.get_name(), std::move(n.arg)));
-   mult->second_op = std::move(arg_d);
+    auto mult = std::make_unique<Binop_node>("*");
+    mult->first_op = context.get_deriv(n.get_name(), n.arg->clone());
+    mult->second_op = std::move(arg_d);
+
+    result = std::move(mult);
 }
 
 void Derivative_visitor::visit(class Unop_node &n) {
